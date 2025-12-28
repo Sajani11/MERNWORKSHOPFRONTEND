@@ -1,52 +1,126 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import NoteForm from './components/NoteForm'
 import NoteList from './components/NoteList'
 import './App.css'
 
+const API_URL = `${import.meta.env.VITE_API_URL}/notes`
+
 function App() {
   const [notes, setNotes] = useState([])
   const [editingNote, setEditingNote] = useState(null)
+  const [loading, setLoading] = useState(true)
 
-  const addNote = (note) => {
-    const newNote = {
-      id: Date.now(),
-      ...note,
-      createdAt: new Date().toISOString()
+  useEffect(() => {
+    fetchNotes()
+  }, [])
+
+  // Fetch all notes
+  const fetchNotes = async () => {
+    try {
+      const response = await fetch(API_URL)
+      const data = await response.json()
+      setNotes(data)
+    } catch (error) {
+      console.error('Error fetching notes:', error)
+    } finally {
+      setLoading(false)
     }
-    setNotes([newNote, ...notes])
   }
 
-  const updateNote = (id, updatedNote) => {
-    setNotes(notes.map(note =>
-      note.id === id ? { ...note, ...updatedNote } : note
-    ))
+  // Add note
+  const addNote = async (note) => {
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(note),
+      })
+
+      const data = await response.json()
+      setNotes([data, ...notes])
+    } catch (error) {
+      console.error('Error adding note:', error)
+    }
+  }
+
+  // Update note
+const updateNote = async (id, updatedNote) => {
+  try {
+    const response = await fetch(`${API_URL}/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updatedNote),
+    })
+
+    const data = await response.json()
+
+    setNotes(prevNotes =>
+      prevNotes.map(note => (note._id === id ? data : note))
+    )
+
     setEditingNote(null)
+  } catch (error) {
+    console.error('Error updating note:', error)
   }
+}
 
-  const deleteNote = (id) => {
-    setNotes(notes.filter(note => note.id !== id))
+
+//Delete note 
+  const deleteNote = async (id) => {
+  try {
+    const response = await fetch(`${API_URL}/${id}`, {
+      method: 'DELETE',
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to delete note')
+    }
+
+    setNotes(prevNotes =>
+      prevNotes.filter(note => note._id !== id)
+    )
+  } catch (error) {
+    console.error('Error deleting note:', error)
   }
+}
+
 
   return (
     <div className="app">
       <header className="header">
         <h1>Notes App</h1>
       </header>
+
       <main className="main">
-        <NoteForm
-          key={editingNote?.id || 'new'}
-          onSubmit={editingNote ? (note) => updateNote(editingNote.id, note) : addNote}
-          editingNote={editingNote}
-          onCancel={() => setEditingNote(null)}
-        />
-        <NoteList
-          notes={notes}
-          onEdit={setEditingNote}
-          onDelete={deleteNote}
-        />
+      <NoteForm
+  key={editingNote?._id || 'new'}
+  onSubmit={
+    editingNote
+      ? (note) => updateNote(editingNote._id, note)
+      : addNote
+  }
+  editingNote={editingNote}
+  onCancel={() => setEditingNote(null)}
+/>
+
+
+        {loading ? (
+          <p>Loading notes...</p>
+        ) : (
+          <NoteList
+            notes={notes}
+            onEdit={setEditingNote}
+            onDelete={deleteNote}
+          />
+        )}
       </main>
+
       <footer className="footer">
-        <p>Notes App - No Backend Required</p>
+        <p>Notes App - Powered by API</p>
       </footer>
     </div>
   )

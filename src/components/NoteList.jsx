@@ -12,12 +12,12 @@ function NoteList({ notes, onEdit, onDelete }) {
 
   return (
     <div className="note-list">
-      {notes.map((note) => (
+      {notes.map(note => (
         <NoteCard
-          key={note.id}
+          key={note._id}
           note={note}
-          onEdit={onEdit}
-          onDelete={onDelete}
+          onEdit={() => onEdit(note)}
+          onDelete={() => onDelete(note._id)}
         />
       ))}
     </div>
