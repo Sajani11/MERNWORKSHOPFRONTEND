@@ -72,17 +72,12 @@ const updateNote = async (id, updatedNote) => {
 //Delete note 
   const deleteNote = async (id) => {
   try {
-    const response = await fetch(`${API_URL}/${id}`, {
+      await fetch(`${API_URL}/${id}`, {
       method: 'DELETE',
     })
 
-    if (!response.ok) {
-      throw new Error('Failed to delete note')
-    }
-
-    setNotes(prevNotes =>
-      prevNotes.filter(note => note._id !== id)
-    )
+    setNotes(notes.filter(note => note._id !== id))
+    
   } catch (error) {
     console.error('Error deleting note:', error)
   }
