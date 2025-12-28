@@ -27,23 +27,40 @@ function App() {
     }
   }
 
-  // Add note
-  const addNote = async (note) => {
-    try {
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(note),
-      })
+ const addNote = async (note) => {
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(note),
+    })
 
-      const data = await response.json()
-      setNotes([data, ...notes])
-    } catch (error) {
-      console.error('Error adding note:', error)
-    }
+    const data = await response.json()
+    setNotes(prevNotes => [data, ...prevNotes])  // ← use prevNotes here
+  } catch (error) {
+    console.error('Error adding note:', error)
   }
+}
+
+  // // Add note
+  // const addNote = async (note) => {
+  //   try {
+  //     const response = await fetch(API_URL, {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify(note),
+  //     })
+
+  //     const data = await response.json()
+  //     setNotes([data, ...notes])
+  //   } catch (error) {
+  //     console.error('Error adding note:', error)
+  //   }
+  // }
 
   // Update note
 const updateNote = async (id, updatedNote) => {
